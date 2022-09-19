@@ -1,34 +1,28 @@
-import React, { Component } from 'react';
-import ItemList from '../itemList';
-import DivError from '../eroor/eroor';
-import GotService from '../../services/service';
-import RowBlock from '../rowBlock/rowBlock';
-import {withRouter}  from 'react-router-dom'
+import React, { useContext } from "react";
+import { ItemList } from "../itemList/itemList";
+import { useParams } from "react-router-dom";
+import { ServiceWrap } from "../serviceWrap/serviceWrap";
+import { RowBlock } from "../rowBlock/rowBlock";
+//import { withRouter } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
+function BookPage() {
+  const navigate = useNavigate();
+  const gotService = useContext(ServiceWrap);
 
-class BookPage extends Component{
-    state ={
-        error:false
-    }
-    gotService = new GotService();
-    componentDidCatch(){
-        this.setState({error:true})
-    }
-    render(){
-        if(this.state.error){
-            return <DivError/>
-        }
-        const itemList = (
-            <ItemList fun={(idItem)=>{
-                this.props.history.push(idItem)
-            }}
-                    gotService={this.gotService.getAllBooks}
-                    renderName = {(item)=>item.name}/>
-        )
-        
-        
-        return(
-            <RowBlock left={itemList}/>
-        )
-    }
+  const itemList = (
+    <ItemList
+      fun={(idItem) => {
+        navigate(idItem);
+      }}
+      gotService={gotService.getAllBooks}
+      renderName={(item) => item.name}
+    />
+  );
+
+  return (
+    <div>
+      <RowBlock left={itemList} right={<Outlet />} />
+    </div>
+  );
 }
-export default withRouter(BookPage);
+export default BookPage;

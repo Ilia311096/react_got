@@ -1,89 +1,55 @@
-import React, {Component} from 'react';
-import './randomChar.css';
-import GotService from '../../services/service';
-import Spinner from '../spiner/spiner';
-import DivError from '../eroor/eroor';
-import PropTypes from 'prop-types';
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import "./randomChar.css";
+import { loadRandomChar } from "../../store/randomChar/action";
+import { Spiner } from "../spiner/spiner";
+import { DivError } from "../eroor/eroor";
+import { selectRandomCharModule } from "../../store/randomChar/selector";
 
-export default class RandomChar extends Component {
-    constructor(props){
-        super(props);
-        this.randomChar()
-    }
-    static defaultProps = {
-        ms:10000,
-    }
-    static propTypes ={
-        randomChar:PropTypes.func,
-        id: PropTypes.number,
-    }
+export function RandomChar() {
+  const randomChar = useSelector(selectRandomCharModule);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const id = Math.floor(Math.random() * 140);
+    const load = () => dispatch(loadRandomChar(id));
+    load();
+    const timerId = setInterval(load, 10000);
+    return () => clearInterval(timerId);
+  }, []);
+  const eroor = randomChar.error ? <DivError /> : null;
+  const spiner = randomChar.loading ? <Spiner /> : null;
+  const content = !(randomChar.loading || eroor) ? (
+    <View char={randomChar.char} />
+  ) : null;
 
-    state = {
-        char : {},
-        loading:true,
-        error:false
-    }
-    timerId = null;
-    componentDidMount(){
-        this.timerId = setInterval(this.randomChar,this.props.ms)
-    }
-    componentWillUnmount(){
-        clearInterval(this.timerId);
-    }
-
-
-    updateState=(char)=>{
-        this.setState({char,loading:false})
-    }
-    upError = (error)=>{
-        console.log(error)
-        this.setState({error:true,loading:false})
-    }
-    randomChar = ()=>{
-        const a = new GotService();
-        const id = Math.floor(Math.random()*140)
-        a.getCharacter(id)
-        .then(this.updateState)
-        .catch(this.upError);
-    }
-    render() {
-        const {char,loading,error} = this.state;
-        const eroor = error? <DivError/>:null;
-        const spiner = loading? <Spinner/>: null;
-        const content = !(loading ||eroor)? <View char ={char}/>:null;
-        return (
-            <div className="random-block rounded">
-                {spiner}
-                {eroor}
-                {content}
-                
-            </div>
-        );
-    }
+  return (
+    <div className="random-block rounded">
+      {spiner}
+      {eroor}
+      {content}
+    </div>
+  );
 }
-const View =({char})=>{
-    const {name,gender,born,died,culture} = char;
-    return(
-        <>
-            <h4>Random Character: {name}</h4>
-            <ul className="list-group list-group-flush">
-                <li className="list-group-item d-flex justify-content-between">
-                    <span className="term">Gender </span>
-                    <span>{gender}</span>
-                </li>
-                <li className="list-group-item d-flex justify-content-between">
-                    <span className="term">Born </span>
-                    <span>{born}</span>
-                </li>
-                <li className="list-group-item d-flex justify-content-between">
-                    <span className="term">Died </span>
-                    <span>{died}</span>
-                </li>
-                <li className="list-group-item d-flex justify-content-between">
-                    <span className="term">Culture </span>
-                    <span>{culture}</span>
-                </li>
-            </ul>
-        </>
-    )
-}
+const View = ({ char }) => {
+  const keys = Object.keys(char).filter(
+    (val) => val !== "id" && val !== "name"
+  );
+  return (
+    <>
+      <h4>Random Character: {char.name}</h4>
+      <ul className="list-group list-group-flush">
+        {keys.map((value) => {
+          return (
+            <li
+              key={char.id + value}
+              className="list-group-item d-flex justify-content-between"
+            >
+              <span className="term">{value.toUpperCase()} </span>
+              <span>{char[value]}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </>
+  );
+};

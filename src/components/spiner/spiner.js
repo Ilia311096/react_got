@@ -1,9 +1,6 @@
 import React from "react";
-import './spiner.css'
+import "./spiner.css";
 
-const Spiner = ()=>{
-    return (
-        <div class="loader">Loading...</div>
-    )
-}
-export default Spiner;
+export const Spiner = () => {
+  return <div class="loader">Loading...</div>;
+};
